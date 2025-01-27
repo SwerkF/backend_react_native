@@ -22,5 +22,5 @@ ENV PORT=8001
 # Exposer le port
 EXPOSE 8001
 
-# Démarrer l'application
-CMD ["node", "dist/index.js"]
+# Démarrer l'application avec module-alias
+CMD ["node", "-r", "module-alias/register", "dist/index.js"]

@@ -1,0 +1,15 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "my-backend",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "8001",
+      "HostPort": "8001"
+    }
+  ],
+  "Volumes": [],
+  "Logging": "/var/log/nodejs"
+} 
