@@ -1,38 +1,47 @@
 # Étape de build
 FROM node:18-alpine AS builder
 
+# Installer les dépendances nécessaires pour la compilation
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copier les fichiers de configuration
 COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Installer les dépendances
 RUN npm ci
 
-# Copier les sources
-COPY src/ ./src/
+# Copier le code source
+COPY . .
 
-# Build l'application
+# Compiler l'application TypeScript
 RUN npm run build
 
 # Étape de production
 FROM node:18-alpine AS runner
 
+# Créer un utilisateur non-root pour la sécurité
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Définir le répertoire de travail
 WORKDIR /app
 
 # Copier les fichiers nécessaires depuis l'étape de build
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Installer uniquement les dépendances de production
-RUN npm ci --only=production
+# Passer à l'utilisateur non-root
+USER nextjs
 
-# Variables d'environnement
-ENV NODE_ENV=production
-ENV PORT=8001
+# Configurer les variables d'environnement
+ENV NODE_ENV=production \
+    PORT=8001
 
-# Exposer le port
+# Exposer le port de l'application
 EXPOSE 8001
 
 # Démarrer l'application
