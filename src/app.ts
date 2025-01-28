@@ -1,11 +1,10 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import connect from "./src/config/conn"; // Alias @/ fonctionne ici
-import { isAuthenticated } from "./src/middlewares/auth";
-import { rateLimit } from "./src/middlewares/rateLimit";
-import { errorHandler } from "./src/middlewares/errorHandler";
-import { logger } from "./src/middlewares/logger";
+import connect from "@/config/conn"; // Alias @/ fonctionne ici
+import { rateLimit } from "@/middlewares/rateLimit";
+import { errorHandler } from "@/middlewares/errorHandler";
+import { logger } from "@/middlewares/logger";
 
 
 dotenv.config();
@@ -26,7 +25,7 @@ connect();
 app.use(rateLimit(100, 60 * 1000));
 
 // Importation des routes
-import authRoutes from './src/routes/authRoutes';
+import authRoutes from '@/routes/authRoutes';
 
 // Utilisation des routes avec préfixes
 app.use('/api/auth', authRoutes);

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - NODE_ENV=production
+      - PORT=8001
+      - ACCESS_TOKEN_SECRET=abcdef778877abcdef
+      - REFRESH_TOKEN_SECRET=abcdef8877
+      - MONGO_URL=mongodb+srv://swerkpro:tQ3KxL9fM4Cv61fg@cluster0.49gyi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGO_DB_NAME=react-native-app 

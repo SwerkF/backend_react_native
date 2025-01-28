@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const connect = async (): Promise<void> => {
   try {
     
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/react-native-app';
+    const mongoURI = process.env.MONGO_URL || '';
 
     // Connexion à MongoDB
     await mongoose.connect(mongoURI, {
