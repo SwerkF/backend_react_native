@@ -1,0 +1,65 @@
+name: CI/CD Docker Deployment to EC2
+
+on:
+  push:
+    branches:
+      - main  # Déclenche sur les pushs vers la branche "main"
+
+jobs:
+  deploy:
+    name: Build and Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Vérifier le code source
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Étape 2 : Installer Node.js et les dépendances
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      # Étape 3 : Lancer les tests
+      - name: Run tests
+        run: npm test
+
+      # Étape 4 : Construire l'image Docker
+      - name: Build Docker image
+        run: |
+          docker build -t express-app:latest .
+
+      # Étape 5 : Se connecter à AWS ECR
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # Étape 6 : Taguer et pousser l'image Docker sur ECR
+      - name: Push Docker image to ECR
+        run: |
+          docker tag express-app:latest ${{ secrets.ECR_REPOSITORY_URL }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY_URL }}:latest
+
+      # Étape 7 : Déployer sur l'instance EC2 via SSH
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.5.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Arrêter et supprimer l'ancien conteneur (si existant)
+            docker stop express-app || true
+            docker rm express-app || true
+
+            # Supprimer l'ancienne image (optionnel)
+            docker rmi ${{ secrets.ECR_REPOSITORY_URL }}:latest || true
+
+            # Tirer la nouvelle image depuis ECR
+            docker pull ${{ secrets.ECR_REPOSITORY_URL }}:latest
+
+            # Lancer le conteneur
+            docker run -d --name express-app -p 3000:3000 ${{ secrets.ECR_REPOSITORY_URL }}:latest

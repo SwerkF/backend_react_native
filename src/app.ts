@@ -5,11 +5,14 @@ import connect from "@/config/conn"; // Alias @/ fonctionne ici
 import { rateLimit } from "@/middlewares/rateLimit";
 import { errorHandler } from "@/middlewares/errorHandler";
 import { logger } from "@/middlewares/logger";
+import http from 'http';
+import { WebSocketManager } from './websocket/WebSocketManager';
 
 
 dotenv.config();
 
 const app: Application = express();
+const server = http.createServer(app);
 
 // Middlewares globaux
 app.use(cors());
@@ -30,6 +33,9 @@ import authRoutes from '@/routes/authRoutes';
 // Utilisation des routes avec préfixes
 app.use('/api/auth', authRoutes);
 
+// Initialiser le WebSocketManager
+export const wsManager = new WebSocketManager(server);
+
 // Register all listeners
 
 
@@ -45,6 +51,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Lancer le serveur
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
+
+export { app, server };
